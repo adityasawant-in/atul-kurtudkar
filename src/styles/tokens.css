@@ -1,0 +1,67 @@
+@theme {
+  /* ---------- Color: Structural Blue / Concrete Amber / Signal Orange ---------- */
+  --color-structural-950: #060e1c;
+  --color-structural-900: #0b2545;
+  --color-structural-800: #123468;
+  --color-structural-700: #1a4685;
+  --color-structural-600: #2a5ba3;
+  --color-structural-500: #4577c2;
+
+  --color-concrete-100: #f7f1e2;
+  --color-concrete-300: #e6d2a0;
+  --color-concrete-500: #c9a34e;
+  --color-concrete-600: #a9843a;
+
+  --color-signal-500: #d9541f;
+  --color-signal-600: #b8431a;
+
+  --color-ink-950: #0a0c0f;
+  --color-ink-900: #1a1d21;
+  --color-ink-700: #3a3f47;
+  --color-ink-500: #6b7280;
+  --color-ink-300: #a7adb6;
+  --color-ink-100: #e7e9ec;
+  --color-ink-50: #f8f9fa;
+
+  /* ---------- Typography ---------- */
+  --font-display: 'Space Grotesk', 'General Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 1.875rem;
+  --text-3xl: 2.25rem;
+  --text-4xl: 2.75rem;
+  --text-5xl: 3.5rem;
+  --text-6xl: 4.5rem;
+  --text-7xl: 5.5rem;
+  --text-8xl: 6.5rem;
+
+  /* ---------- Radius ---------- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+
+  /* ---------- Shadows (blue-tinted, never pure black) ---------- */
+  --shadow-sm: 0 1px 2px rgba(11, 37, 69, 0.08);
+  --shadow-md: 0 8px 24px rgba(11, 37, 69, 0.14);
+  --shadow-lg: 0 24px 64px rgba(11, 37, 69, 0.24);
+
+  /* ---------- Breakpoints ---------- */
+  --breakpoint-3xl: 120rem;
+
+  /* ---------- Easing ---------- */
+  --ease-structural: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-enter: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-exit: cubic-bezier(0.7, 0, 0.84, 0);
+}
+
+:root {
+  --nav-height: 88px;
+  --nav-height-scrolled: 64px;
+  --container-max: 1280px;
+  color-scheme: dark;
+}

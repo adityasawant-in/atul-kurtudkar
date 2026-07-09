@@ -1,0 +1,55 @@
+import { useCallback, useEffect, useState } from 'react'
+import { BrowserRouter } from 'react-router-dom'
+import { Navbar } from './layout/Navbar/Navbar'
+import { PageWrapper } from './layout/PageWrapper'
+import { Loader } from './layout/Loader/Loader'
+import { AppRouter } from './router/AppRouter'
+import { NoiseOverlay } from './components/shared/NoiseOverlay'
+import { Vignette } from './components/shared/Vignette'
+import { ScrollProgressBar } from './components/shared/ScrollProgressBar'
+import { CursorGlow } from './components/shared/CursorGlow'
+import { ErrorBoundary } from './components/shared/ErrorBoundary'
+import { SkipToContent } from './components/shared/SkipToContent'
+import { SearchOverlay } from './components/search/SearchOverlay'
+import { ThemeProvider } from './context/ThemeContext'
+
+function App() {
+  const [searchOpen, setSearchOpen] = useState(false)
+
+  const closeSearch = useCallback(() => setSearchOpen(false), [])
+
+  useEffect(() => {
+    function handleKeydown(e) {
+      const isCmdK = (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k'
+      if (isCmdK) {
+        e.preventDefault()
+        setSearchOpen((open) => !open)
+      }
+      if (e.key === 'Escape') setSearchOpen(false)
+    }
+    document.addEventListener('keydown', handleKeydown)
+    return () => document.removeEventListener('keydown', handleKeydown)
+  }, [])
+
+  return (
+    <ThemeProvider>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <SkipToContent />
+          <Loader />
+          <ScrollProgressBar />
+          <CursorGlow />
+          <Navbar onSearchOpen={() => setSearchOpen(true)} />
+          <PageWrapper>
+            <AppRouter />
+          </PageWrapper>
+          <Vignette />
+          <NoiseOverlay />
+          <SearchOverlay open={searchOpen} onClose={closeSearch} />
+        </BrowserRouter>
+      </ErrorBoundary>
+    </ThemeProvider>
+  )
+}
+
+export default App

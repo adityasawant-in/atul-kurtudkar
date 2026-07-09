@@ -1,0 +1,17 @@
+{
+  "name": "Atul Kudtarkar & Associates",
+  "short_name": "AKA Structural",
+  "description": "Structural engineering consultancy in Badlapur, Maharashtra — RCC structural design, structural audits and construction consultation.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060e1c",
+  "theme_color": "#060e1c",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
