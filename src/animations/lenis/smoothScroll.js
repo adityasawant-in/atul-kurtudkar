@@ -6,13 +6,10 @@ gsap.registerPlugin(ScrollTrigger)
 
 let lenis = null
 let rafId = null
+let tickerCallback = null
 
 /**
  * Creates (or returns) the single Lenis instance for the whole app.
- * ScrollTrigger is told to read scroll position from Lenis instead of the
- * native `window.scrollY`, and Lenis's `scroll` event drives
- * `ScrollTrigger.update()` — this is what keeps GSAP's scrubbed timelines
- * physically glued to the smoothed scroll rather than the raw wheel delta.
  */
 export function createSmoothScroll({ reducedMotion = false } = {}) {
   if (lenis) return lenis
@@ -28,15 +25,15 @@ export function createSmoothScroll({ reducedMotion = false } = {}) {
 
   lenis.on('scroll', ScrollTrigger.update)
 
-  gsap.ticker.add((time) => {
+  // Create ticker only once
+  tickerCallback = (time) => {
+    if (!lenis) return
     lenis.raf(time * 1000)
-  })
+  }
+
+  gsap.ticker.add(tickerCallback)
   gsap.ticker.lagSmoothing(0)
 
-  // Web fonts swapping in after first paint change text metrics, which
-  // shifts document height — without a refresh here, ScrollTrigger's pin
-  // start/end offsets (computed pre-font-load) drift out of sync with the
-  // actual layout, most noticeably on the pinned construction section.
   if (typeof document !== 'undefined' && document.fonts?.ready) {
     document.fonts.ready.then(() => ScrollTrigger.refresh())
   }
@@ -46,10 +43,15 @@ export function createSmoothScroll({ reducedMotion = false } = {}) {
       if (arguments.length) {
         lenis.scrollTo(value, { immediate: true })
       }
-      return lenis.scroll
+      return lenis?.scroll || 0
     },
     getBoundingClientRect() {
-      return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight }
+      return {
+        top: 0,
+        left: 0,
+        width: window.innerWidth,
+        height: window.innerHeight,
+      }
     },
   })
 
@@ -61,7 +63,21 @@ export function getSmoothScroll() {
 }
 
 export function destroySmoothScroll() {
-  if (rafId) cancelAnimationFrame(rafId)
-  lenis?.destroy()
-  lenis = null
+  if (tickerCallback) {
+    gsap.ticker.remove(tickerCallback)
+    tickerCallback = null
+  }
+
+  if (rafId) {
+    cancelAnimationFrame(rafId)
+    rafId = null
+  }
+
+  if (lenis) {
+    lenis.off('scroll', ScrollTrigger.update)
+    lenis.destroy()
+    lenis = null
+  }
+
+  ScrollTrigger.clearScrollMemory()
 }
