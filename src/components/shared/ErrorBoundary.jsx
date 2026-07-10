@@ -2,10 +2,15 @@ import { Component } from 'react'
 import { RefreshCw } from 'lucide-react'
 
 /**
- * Top-level class error boundary — React still requires a class component
- * for this (no hook equivalent). Catches render-time errors anywhere below
- * it and shows a branded fallback instead of a blank white screen, which is
- * what a Fortune 500 client would otherwise see on a production bug.
+ * Class error boundary — React still requires a class component for this
+ * (no hook equivalent). Catches render-time errors anywhere below it and
+ * shows a branded fallback instead of a blank white screen.
+ *
+ * Pass a `resetKey` (e.g. the route pathname) so the boundary automatically
+ * clears itself when the key changes — without this, once tripped it stays
+ * tripped until a full manual page reload, because getDerivedStateFromError
+ * has no way to know the user has already navigated away from the page
+ * that crashed.
  */
 export class ErrorBoundary extends Component {
   constructor(props) {
@@ -24,6 +29,12 @@ export class ErrorBoundary extends Component {
     console.error('Unhandled UI error:', error, info)
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.state.hasError && prevProps.resetKey !== this.props.resetKey) {
+      this.setState({ hasError: false })
+    }
+  }
+
   handleReload = () => {
     window.location.reload()
   }
@@ -40,8 +51,8 @@ export class ErrorBoundary extends Component {
           We hit a structural snag.
         </h1>
         <p className="max-w-sm text-sm leading-relaxed text-ink-400">
-          The page failed to render correctly. Reloading usually resolves this — if it keeps
-          happening, please get in touch directly.
+          This page failed to render correctly. Try another page from the menu above, or reload —
+          if it keeps happening, please get in touch directly.
         </p>
         <button
           type="button"

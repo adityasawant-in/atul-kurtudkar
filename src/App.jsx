@@ -33,6 +33,11 @@ function App() {
 
   return (
     <ThemeProvider>
+      {/* Last-resort catch-all for errors in the app shell itself (theme
+          provider, router setup, etc). Per-page errors are now caught
+          earlier and more gracefully by the ErrorBoundary inside
+          PageWrapper, which keeps the navbar alive and self-heals on
+          navigation — this outer one should rarely, if ever, trigger. */}
       <ErrorBoundary>
         <BrowserRouter>
           <SkipToContent />

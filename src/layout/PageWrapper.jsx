@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { useLenis } from '../hooks/useLenis'
 import { useSmoothAnchors } from '../hooks/useSmoothAnchors'
 import { useRouteScrollReset } from '../hooks/useRouteScrollReset'
+import { ErrorBoundary } from '../components/shared/ErrorBoundary'
 
 const pageTransition = {
   initial: { opacity: 0, y: 16 },
@@ -27,7 +28,11 @@ export function PageWrapper({ children }) {
           exit="exit"
           transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
         >
-          {children}
+          {/* Scoped to the page content only (not the navbar/shell), and
+              keyed to the route so a crash on one page never takes down
+              navigation, and clears itself the moment the user moves on
+              instead of requiring a manual reload. */}
+          <ErrorBoundary resetKey={location.pathname}>{children}</ErrorBoundary>
         </motion.div>
       </AnimatePresence>
     </main>
