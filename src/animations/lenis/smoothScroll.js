@@ -61,16 +61,6 @@ export function createSmoothScroll({ reducedMotion = false } = {}) {
     pinType: 'transform',
   })
 
-  // Force a re-measure once layout has actually settled/painted, instead
-  // of relying only on the fonts.ready refresh below — that gap was
-  // letting the very first scroll hit stale pin positions, causing an
-  // up/down stutter before things self-correct.
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      ScrollTrigger.refresh()
-    })
-  })
-
   return lenis
 }
 
