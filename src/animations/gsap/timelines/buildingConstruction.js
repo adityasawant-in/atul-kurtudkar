@@ -1,57 +1,168 @@
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { Observer } from 'gsap/Observer'
 import { BUILDING_SCROLL_LENGTH, CONSTRUCTION_STAGES } from '../../../constants/animationConfig'
+import { getSmoothScroll } from '../../lenis/smoothScroll'
 
-gsap.registerPlugin(ScrollTrigger)
+gsap.registerPlugin(ScrollTrigger, Observer)
 
 const STAGE_ORDER = Object.keys(CONSTRUCTION_STAGES)
 
-function resolveStage(progress) {
-  for (const key of STAGE_ORDER) {
-    const [start, end] = CONSTRUCTION_STAGES[key]
-    if (progress >= start && progress < end) return key
-  }
-  return STAGE_ORDER[STAGE_ORDER.length - 1]
+function stageMidpoint(key) {
+  const [start, end] = CONSTRUCTION_STAGES[key]
+  return (start + end) / 2
 }
 
 /**
- * Pins `sectionEl` for BUILDING_SCROLL_LENGTH px of scroll and scrubs a
- * single progress value (0-1) into `progressRef` every frame — this ref is
- * the one thing every visual layer of the construction experience reads
- * from, so scroll position and visual state can never drift out of sync.
+ * Pins `sectionEl` and steps through CONSTRUCTION_STAGES one at a time —
+ * every wheel/touch gesture advances or retreats exactly one stage,
+ * animated smoothly over ~0.85s, regardless of how hard or light the
+ * gesture was. This replaces the old continuous scrub (raw scroll distance
+ * mapped 1:1 to progress), which let a single fast — or even just a
+ * slightly-too-eager — scroll blow straight through two or three stages
+ * at once.
  *
- * `onStageChange` fires only when the active named stage changes (not every
- * frame), so the overlay copy can safely use React state without causing a
- * 60fps re-render loop. `onRawProgress` fires on every single scrub tick and
- * is meant for direct DOM/style writes (no setState) — e.g. driving opacity/
- * transform on the construction layers — so it never triggers a React
- * re-render either.
+ * How it works:
+ *  - GSAP's Observer plugin (not native scroll) reads wheel/touch intent
+ *    while the section is pinned, with `preventDefault: true` so the
+ *    browser's own scroll never advances during that time.
+ *  - Each gesture calls `step(±1)`, which tweens `progressRef.current`
+ *    from wherever it is to the midpoint of the next/previous stage.
+ *  - While that tween is running, further gestures are ignored outright
+ *    (not queued) — so a fast flick still only ever moves one stage.
+ *  - At the first/last stage, the *next* gesture in that direction
+ *    releases the pin by smoothly scrolling just past its start/end
+ *    boundary, handing control back to normal (Lenis) scrolling.
+ *  - Lenis itself is paused for the duration the pin is engaged, so its
+ *    own wheel handling never fights with the Observer's.
+ *
+ * `onStageChange` fires whenever the active named stage changes.
+ * `onProgress` / `onRawProgress` fire on every tween tick — the latter is
+ * meant for direct DOM/style writes (no setState), matching the contract
+ * every visual layer already relies on.
  */
-export function createBuildingTimeline({ sectionEl, progressRef, onStageChange, onProgress, onRawProgress }) {
+export function createBuildingTimeline({
+  sectionEl,
+  progressRef,
+  onStageChange,
+  onProgress,
+  onRawProgress,
+  reducedMotion = false,
+}) {
   if (!sectionEl) return null
 
+  let currentIndex = 0
+  let animating = false
   let lastStage = null
+  let observer = null
 
-  const trigger = ScrollTrigger.create({
+  const lenis = () => getSmoothScroll()
+
+  const emit = (p) => {
+    progressRef.current = p
+    onProgress?.(p)
+    onRawProgress?.(p)
+    const key = STAGE_ORDER[currentIndex]
+    if (key !== lastStage) {
+      lastStage = key
+      onStageChange?.(key)
+    }
+  }
+
+  const pinTrigger = ScrollTrigger.create({
     trigger: sectionEl,
     start: 'top top',
     end: `+=${BUILDING_SCROLL_LENGTH}`,
-    scrub: 1,
     pin: true,
     pinSpacing: true,
     anticipatePin: 1,
-    onUpdate: (self) => {
-      progressRef.current = self.progress
-      onProgress?.(self.progress)
-      onRawProgress?.(self.progress)
-
-      const stage = resolveStage(self.progress)
-      if (stage !== lastStage) {
-        lastStage = stage
-        onStageChange?.(stage)
-      }
+    onEnter: () => {
+      currentIndex = 0
+      emit(stageMidpoint(STAGE_ORDER[0]))
+      lenis()?.stop()
+      observer?.enable()
+    },
+    onEnterBack: () => {
+      currentIndex = STAGE_ORDER.length - 1
+      emit(stageMidpoint(STAGE_ORDER[currentIndex]))
+      lenis()?.stop()
+      observer?.enable()
+    },
+    onLeave: () => {
+      observer?.disable()
+      lenis()?.start()
+    },
+    onLeaveBack: () => {
+      observer?.disable()
+      lenis()?.start()
     },
   })
 
-  return trigger
+  const releaseUp = () => {
+    observer?.disable()
+    lenis()?.start()
+    const target = pinTrigger.start - 20
+    const l = lenis()
+    if (l) l.scrollTo(target, { duration: 0.8 })
+    else window.scrollTo({ top: target, behavior: 'smooth' })
+  }
+
+  const releaseDown = () => {
+    observer?.disable()
+    lenis()?.start()
+    const target = pinTrigger.end + 20
+    const l = lenis()
+    if (l) l.scrollTo(target, { duration: 0.8 })
+    else window.scrollTo({ top: target, behavior: 'smooth' })
+  }
+
+  const step = (direction) => {
+    if (animating) return
+    const nextIndex = currentIndex + direction
+
+    if (nextIndex < 0) {
+      releaseUp()
+      return
+    }
+    if (nextIndex >= STAGE_ORDER.length) {
+      releaseDown()
+      return
+    }
+
+    animating = true
+    currentIndex = nextIndex
+    const proxy = { p: progressRef.current }
+    gsap.to(proxy, {
+      p: stageMidpoint(STAGE_ORDER[currentIndex]),
+      duration: reducedMotion ? 0.15 : 0.85,
+      ease: 'power2.out',
+      onUpdate: () => emit(proxy.p),
+      onComplete: () => {
+        animating = false
+      },
+    })
+  }
+
+  observer = Observer.create({
+    target: window,
+    type: 'wheel,touch',
+    wheelSpeed: 1,
+    tolerance: 8,
+    preventDefault: true,
+    onUp: () => step(-1),
+    onDown: () => step(1),
+  })
+  observer.disable()
+
+  // Seed the initial stage/progress so the overlay isn't blank before the
+  // user has scrolled into the pin for the first time.
+  emit(stageMidpoint(STAGE_ORDER[0]))
+
+  return {
+    kill: () => {
+      observer?.kill()
+      pinTrigger.kill()
+      lenis()?.start()
+    },
+  }
 }

@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import gsap from 'gsap'
 import { ConstructionLayers, applyConstructionLayers } from './ConstructionLayers'
 import { createBuildingTimeline } from '../../animations/gsap/timelines/buildingConstruction'
 import { useScrollProgress } from '../../hooks/useScrollProgress'
@@ -103,44 +104,52 @@ export function BuildingConstructionScene() {
     sunset: useRef(null),
   }
 
-  useEffect(() => {
-    const trigger = createBuildingTimeline({
-      sectionEl: sectionRef.current,
-      progressRef,
-      onStageChange: setStage,
-      // Only re-renders when the rounded percentage actually changes, and
-      // only fires while this trigger is scrubbing — unlike a setInterval
-      // poll, there is zero re-render cost while the section is out of
-      // view or the page is idle.
-      onProgress: (p) => {
-        setProgressPct((prev) => {
-          const next = Math.round(p * 100)
-          return next === prev ? prev : next
-        })
-      },
-      // Fires on every scrub tick — drives the construction layers via
-      // direct style writes, no setState involved.
-      onRawProgress: (p) => {
-        if (!reducedMotion) {
-          applyConstructionLayers(p, layerRefs, mapRange)
-        } else {
-          // Reduced motion: skip parallax/staggered reveal, just cross-fade
-          // straight from blueprint to the finished building.
-          const done = mapRange(p, 0.3, 0.9, 0, 1)
-          if (layerRefs.blueprint.current) layerRefs.blueprint.current.style.opacity = String(1 - done)
-          if (layerRefs.foundation.current) layerRefs.foundation.current.style.opacity = String(done)
-          if (layerRefs.columns.current) layerRefs.columns.current.style.opacity = String(done)
-          if (layerRefs.structure.current) layerRefs.structure.current.style.opacity = String(done)
-          if (layerRefs.walls.current) layerRefs.walls.current.style.opacity = String(done * 0.95)
-          if (layerRefs.glass.current) layerRefs.glass.current.style.opacity = String(done * 0.85)
-          if (layerRefs.roof.current) layerRefs.roof.current.style.opacity = String(done)
-        }
-      },
-    })
+  // useLayoutEffect (not useEffect) + gsap.context(): the trigger and its
+  // pin-spacer are created/reverted synchronously in the commit phase this
+  // way, rather than in the deferred passive-effect pass useEffect uses —
+  // this is a second, independent safety net on top of the proactive
+  // kill-all-triggers-on-navigate in PageWrapper.jsx. ctx.revert() cleans
+  // up everything GSAP touched (not just the trigger reference), which is
+  // the pattern GSAP's own docs recommend for React.
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      createBuildingTimeline({
+        sectionEl: sectionRef.current,
+        progressRef,
+        onStageChange: setStage,
+        reducedMotion,
+        // Only re-renders when the rounded percentage actually changes, and
+        // only fires while this trigger is scrubbing — unlike a setInterval
+        // poll, there is zero re-render cost while the section is out of
+        // view or the page is idle.
+        onProgress: (p) => {
+          setProgressPct((prev) => {
+            const next = Math.round(p * 100)
+            return next === prev ? prev : next
+          })
+        },
+        // Fires on every scrub tick — drives the construction layers via
+        // direct style writes, no setState involved.
+        onRawProgress: (p) => {
+          if (!reducedMotion) {
+            applyConstructionLayers(p, layerRefs, mapRange)
+          } else {
+            // Reduced motion: skip parallax/staggered reveal, just cross-fade
+            // straight from blueprint to the finished building.
+            const done = mapRange(p, 0.3, 0.9, 0, 1)
+            if (layerRefs.blueprint.current) layerRefs.blueprint.current.style.opacity = String(1 - done)
+            if (layerRefs.foundation.current) layerRefs.foundation.current.style.opacity = String(done)
+            if (layerRefs.columns.current) layerRefs.columns.current.style.opacity = String(done)
+            if (layerRefs.structure.current) layerRefs.structure.current.style.opacity = String(done)
+            if (layerRefs.walls.current) layerRefs.walls.current.style.opacity = String(done * 0.95)
+            if (layerRefs.glass.current) layerRefs.glass.current.style.opacity = String(done * 0.85)
+            if (layerRefs.roof.current) layerRefs.roof.current.style.opacity = String(done)
+          }
+        },
+      })
+    }, sectionRef)
 
-    return () => {
-      trigger?.kill()
-    }
+    return () => ctx.revert()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reducedMotion])
 

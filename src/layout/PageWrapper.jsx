@@ -1,9 +1,14 @@
+import { useLayoutEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useLocation } from 'react-router-dom'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { useLenis } from '../hooks/useLenis'
 import { useSmoothAnchors } from '../hooks/useSmoothAnchors'
 import { useRouteScrollReset } from '../hooks/useRouteScrollReset'
 import { ErrorBoundary } from '../components/shared/ErrorBoundary'
+
+gsap.registerPlugin(ScrollTrigger)
 
 const pageTransition = {
   initial: { opacity: 0, y: 16 },
@@ -16,6 +21,23 @@ export function PageWrapper({ children }) {
   useSmoothAnchors()
   useRouteScrollReset()
   const location = useLocation()
+
+  // GSAP's `pin: true` (the construction section) wraps its element in a
+  // pin-spacer div, restructuring the DOM completely outside React's
+  // knowledge. If that's still in place by the time AnimatePresence
+  // actually unmounts the outgoing page (after its ~450ms exit animation),
+  // React's recorded parent/child references no longer match the real DOM
+  // and `removeChild` throws NotFoundError -> blank screen until reload.
+  //
+  // Killing every ScrollTrigger synchronously the instant the route
+  // changes (this component never unmounts, only `location.pathname`
+  // does, so this fires immediately on navigation) reverts every
+  // pin-spacer well before that later removal ever happens.
+  useLayoutEffect(() => {
+    return () => {
+      ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
+    }
+  }, [location.pathname])
 
   return (
     <main id="main-content" tabIndex={-1} className="relative w-full outline-none">

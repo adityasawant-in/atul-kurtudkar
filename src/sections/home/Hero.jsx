@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
+import gsap from 'gsap'
 import { HeroBackdrop } from './HeroBackdrop'
 import { Button } from '../../components/ui/Button'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
@@ -21,20 +22,19 @@ export function Hero() {
   const scrimRef = useRef(null)
   const contentRef = useRef(null)
 
-  useEffect(() => {
-    const introTl = playHeroIntro({
-      canvasEl: canvasWrapRef.current,
-      scrimEl: scrimRef.current,
-    })
-    const exitTrigger = createHeroExitTrigger({
-      heroEl: heroRef.current,
-      contentEl: contentRef.current,
-    })
+  useLayoutEffect(() => {
+    const ctx = gsap.context(() => {
+      playHeroIntro({
+        canvasEl: canvasWrapRef.current,
+        scrimEl: scrimRef.current,
+      })
+      createHeroExitTrigger({
+        heroEl: heroRef.current,
+        contentEl: contentRef.current,
+      })
+    }, heroRef)
 
-    return () => {
-      introTl?.kill()
-      exitTrigger?.kill()
-    }
+    return () => ctx.revert()
   }, [])
 
   return (
