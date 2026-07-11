@@ -55,6 +55,14 @@ export function createBuildingTimeline({
   let animating = false
   let lastStage = null
   let observer = null
+  let lastStepAt = 0
+  // Hard floor between accepted steps, independent of the tween's own
+  // `animating` flag — a second, unconditional guard so that even if a
+  // burst of touch events on mobile ever slipped past the first one
+  // (some devices report touchmove in bursts faster than a single
+  // synchronous JS tick), nothing can advance more than one stage before
+  // this window has fully elapsed.
+  const MIN_STEP_INTERVAL_MS = 700
 
   const lenis = () => getSmoothScroll()
 
@@ -117,7 +125,10 @@ export function createBuildingTimeline({
   }
 
   const step = (direction) => {
-    if (animating) return
+    const now = performance.now()
+    if (animating || now - lastStepAt < MIN_STEP_INTERVAL_MS) return
+    lastStepAt = now
+
     const nextIndex = currentIndex + direction
 
     if (nextIndex < 0) {
@@ -147,7 +158,7 @@ export function createBuildingTimeline({
     target: window,
     type: 'wheel,touch',
     wheelSpeed: 1,
-    tolerance: 8,
+    tolerance: 24,
     preventDefault: true,
     onUp: () => step(-1),
     onDown: () => step(1),
