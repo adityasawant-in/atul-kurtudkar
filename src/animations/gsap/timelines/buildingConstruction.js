@@ -17,14 +17,17 @@ function resolveStage(progress) {
 /**
  * Pins `sectionEl` for BUILDING_SCROLL_LENGTH px of scroll and scrubs a
  * single progress value (0-1) into `progressRef` every frame — this ref is
- * the one thing the R3F building, crane, camera rig and lighting rig all
- * read from, so scroll position and 3D state can never drift out of sync.
+ * the one thing every visual layer of the construction experience reads
+ * from, so scroll position and visual state can never drift out of sync.
  *
  * `onStageChange` fires only when the active named stage changes (not every
  * frame), so the overlay copy can safely use React state without causing a
- * 60fps re-render loop.
+ * 60fps re-render loop. `onRawProgress` fires on every single scrub tick and
+ * is meant for direct DOM/style writes (no setState) — e.g. driving opacity/
+ * transform on the construction layers — so it never triggers a React
+ * re-render either.
  */
-export function createBuildingTimeline({ sectionEl, progressRef, onStageChange, onProgress }) {
+export function createBuildingTimeline({ sectionEl, progressRef, onStageChange, onProgress, onRawProgress }) {
   if (!sectionEl) return null
 
   let lastStage = null
@@ -40,6 +43,7 @@ export function createBuildingTimeline({ sectionEl, progressRef, onStageChange, 
     onUpdate: (self) => {
       progressRef.current = self.progress
       onProgress?.(self.progress)
+      onRawProgress?.(self.progress)
 
       const stage = resolveStage(self.progress)
       if (stage !== lastStage) {

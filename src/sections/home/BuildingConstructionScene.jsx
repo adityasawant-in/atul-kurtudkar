@@ -1,25 +1,12 @@
-import { useEffect, useRef, useState, lazy } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { SceneCanvas } from '../../three/canvas/SceneCanvas'
-import { Building } from '../../three/objects/Building'
-import { Crane } from '../../three/objects/Crane'
-import { Lights } from '../../three/environment/Lights'
-import { BlueprintGrid } from '../../three/environment/BlueprintGrid'
-import { Skyline } from '../../three/environment/Skyline'
-import { FloatingParticles } from '../../three/environment/Particles'
-import { applyBuildingCameraRig } from '../../animations/three/cameraRigs/buildingCameraRig'
+import { ConstructionLayers, applyConstructionLayers } from './ConstructionLayers'
 import { createBuildingTimeline } from '../../animations/gsap/timelines/buildingConstruction'
 import { useScrollProgress } from '../../hooks/useScrollProgress'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
-import { useMediaQuery } from '../../hooks/useMediaQuery'
-import { IS_DESKTOP_QUERY } from '../../constants/breakpoints'
-
-import { DustParticles } from '../../three/environment/Particles'
+import { mapRange } from '../../utils/clamp'
 import { fadeUp, staggerContainer } from '../../animations/framer/variants'
 import { Logo } from '../../components/shared/Logo'
-
-const PostFX = lazy(() => import('../../three/canvas/PostFX').then((m) => ({ default: m.PostFX })))
 
 const STAGE_CONTENT = {
   blueprint: {
@@ -90,38 +77,31 @@ const STAGE_CONTENT = {
   },
 }
 
-function ConstructionScene({ progressRef, reducedMotion }) {
-  const isDesktop = useMediaQuery(IS_DESKTOP_QUERY)
-
-  useFrame(({ camera, clock }, delta) => {
-    applyBuildingCameraRig(camera, progressRef.current, clock.getElapsedTime(), delta)
-  })
-
-  return (
-    <>
-      <color attach="background" args={['#060e1c']} />
-      <fog attach="fog" args={['#060e1c', 16, 40]} />
-
-      <Lights progressRef={progressRef} />
-      <Skyline count={isDesktop ? 10 : 6} radius={30} />
-      {!reducedMotion && <FloatingParticles count={isDesktop ? 120 : 50} spread={18} />}
-      <BlueprintGrid opacity={0.22} pulse={!reducedMotion} position={[0, -2.4, 0]} />
-
-      <Building progressRef={progressRef} />
-      <Crane progressRef={progressRef} />
-      {!reducedMotion && <DustParticles progressRef={progressRef} />}
-
-      <PostFX reducedMotion={reducedMotion || !isDesktop} bloomIntensity={0.45} focusDistance={0.03} />
-    </>
-  )
-}
-
 export function BuildingConstructionScene() {
   const sectionRef = useRef(null)
   const progressRef = useScrollProgress(0)
   const reducedMotion = useReducedMotion()
   const [stage, setStage] = useState('blueprint')
   const [progressPct, setProgressPct] = useState(0)
+
+  // Every layer is a plain DOM ref — updated directly in the GSAP
+  // ScrollTrigger tick below, never through React state, so scrubbing
+  // costs zero re-renders (same performance contract the old R3F rig had).
+  const layerRefs = {
+    parallaxBg: useRef(null),
+    svgWrap: useRef(null),
+    blueprint: useRef(null),
+    ground: useRef(null),
+    foundation: useRef(null),
+    crane: useRef(null),
+    columns: useRef(null),
+    structure: useRef(null),
+    walls: useRef(null),
+    glass: useRef(null),
+    roof: useRef(null),
+    glow: useRef(null),
+    sunset: useRef(null),
+  }
 
   useEffect(() => {
     const trigger = createBuildingTimeline({
@@ -138,13 +118,31 @@ export function BuildingConstructionScene() {
           return next === prev ? prev : next
         })
       },
+      // Fires on every scrub tick — drives the construction layers via
+      // direct style writes, no setState involved.
+      onRawProgress: (p) => {
+        if (!reducedMotion) {
+          applyConstructionLayers(p, layerRefs, mapRange)
+        } else {
+          // Reduced motion: skip parallax/staggered reveal, just cross-fade
+          // straight from blueprint to the finished building.
+          const done = mapRange(p, 0.3, 0.9, 0, 1)
+          if (layerRefs.blueprint.current) layerRefs.blueprint.current.style.opacity = String(1 - done)
+          if (layerRefs.foundation.current) layerRefs.foundation.current.style.opacity = String(done)
+          if (layerRefs.columns.current) layerRefs.columns.current.style.opacity = String(done)
+          if (layerRefs.structure.current) layerRefs.structure.current.style.opacity = String(done)
+          if (layerRefs.walls.current) layerRefs.walls.current.style.opacity = String(done * 0.95)
+          if (layerRefs.glass.current) layerRefs.glass.current.style.opacity = String(done * 0.85)
+          if (layerRefs.roof.current) layerRefs.roof.current.style.opacity = String(done)
+        }
+      },
     })
 
     return () => {
       trigger?.kill()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [reducedMotion])
 
   const content = STAGE_CONTENT[stage]
   const isFinalStage = stage === 'sunset'
@@ -155,14 +153,9 @@ export function BuildingConstructionScene() {
       id="construction-experience"
       className="relative h-[100dvh] w-full overflow-hidden bg-structural-950"
     >
-      <SceneCanvas
-        camera={{ position: [0, 1.2, 11], fov: 42, near: 0.1, far: 120 }}
-        fallback={<div className="absolute inset-0 -z-10 bg-structural-950" />}
-      >
-        <ConstructionScene progressRef={progressRef} reducedMotion={reducedMotion} />
-      </SceneCanvas>
+      <ConstructionLayers refs={layerRefs} />
 
-      {/* Readability scrim keeps copy legible over the ~20-30% opacity building */}
+      {/* Readability scrim keeps copy legible over the layered building */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-structural-950/85 via-structural-950/30 to-structural-950/70" />
 
       {/* Progress rail */}
@@ -253,4 +246,3 @@ export function BuildingConstructionScene() {
     </section>
   )
 }
-

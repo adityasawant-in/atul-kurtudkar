@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { SceneCanvas } from '../../three/canvas/SceneCanvas'
-import { HeroScene } from './HeroScene'
+import { HeroBackdrop } from './HeroBackdrop'
 import { Button } from '../../components/ui/Button'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { playHeroIntro } from '../../animations/gsap/timelines/heroIntro'
@@ -45,9 +44,7 @@ export function Hero() {
       className="relative flex h-[100dvh] w-full items-center overflow-hidden bg-structural-950"
     >
       <div ref={canvasWrapRef}>
-        <SceneCanvas fallback={<div className="absolute inset-0 -z-10 bg-structural-950" />}>
-          <HeroScene reducedMotion={reducedMotion} />
-        </SceneCanvas>
+        <HeroBackdrop reducedMotion={reducedMotion} />
       </div>
 
       {/* Readability scrim over the 3D scene */}
