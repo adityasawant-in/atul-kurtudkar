@@ -8,9 +8,8 @@ gsap.registerPlugin(ScrollTrigger, Observer)
 
 const STAGE_ORDER = Object.keys(CONSTRUCTION_STAGES)
 
-function stageMidpoint(key) {
-  const [start, end] = CONSTRUCTION_STAGES[key]
-  return (start + end) / 2
+function stageEnd(key) {
+  return CONSTRUCTION_STAGES[key][1]
 }
 
 /**
@@ -25,9 +24,18 @@ function stageMidpoint(key) {
  * How it works:
  *  - GSAP's Observer plugin (not native scroll) reads wheel/touch intent
  *    while the section is pinned, with `preventDefault: true` so the
- *    browser's own scroll never advances during that time.
+ *    browser's own scroll never advances during that time. `touch-action:
+ *    none` is also applied to the section directly while pinned — on some
+ *    mobile browsers, JS `preventDefault()` alone doesn't fully block
+ *    native touch-scrolling, letting a few pixels leak through per swipe
+ *    until they silently add up and release the pin on their own, well
+ *    before the user has actually stepped through every stage. The CSS
+ *    property stops that at the browser level, before JS even gets involved.
  *  - Each gesture calls `step(±1)`, which tweens `progressRef.current`
- *    from wherever it is to the midpoint of the next/previous stage.
+ *    from wherever it is to the end of the next/previous stage's range —
+ *    the last stage now always resolves to exactly progress 1.0, which
+ *    matters because the window-glow/sunset layers only trigger above
+ *    ~0.88/0.95.
  *  - While that tween is running, further gestures are ignored outright
  *    (not queued) — so a fast flick still only ever moves one stage.
  *  - At the first/last stage, the *next* gesture in that direction
@@ -86,22 +94,26 @@ export function createBuildingTimeline({
     anticipatePin: 1,
     onEnter: () => {
       currentIndex = 0
-      emit(stageMidpoint(STAGE_ORDER[0]))
+      emit(0)
       lenis()?.stop()
+      sectionEl.style.touchAction = 'none'
       observer?.enable()
     },
     onEnterBack: () => {
       currentIndex = STAGE_ORDER.length - 1
-      emit(stageMidpoint(STAGE_ORDER[currentIndex]))
+      emit(stageEnd(STAGE_ORDER[currentIndex]))
       lenis()?.stop()
+      sectionEl.style.touchAction = 'none'
       observer?.enable()
     },
     onLeave: () => {
       observer?.disable()
+      sectionEl.style.touchAction = ''
       lenis()?.start()
     },
     onLeaveBack: () => {
       observer?.disable()
+      sectionEl.style.touchAction = ''
       lenis()?.start()
     },
   })
@@ -144,7 +156,7 @@ export function createBuildingTimeline({
     currentIndex = nextIndex
     const proxy = { p: progressRef.current }
     gsap.to(proxy, {
-      p: stageMidpoint(STAGE_ORDER[currentIndex]),
+      p: stageEnd(STAGE_ORDER[currentIndex]),
       duration: reducedMotion ? 0.15 : 0.85,
       ease: 'power2.out',
       onUpdate: () => emit(proxy.p),
@@ -167,12 +179,13 @@ export function createBuildingTimeline({
 
   // Seed the initial stage/progress so the overlay isn't blank before the
   // user has scrolled into the pin for the first time.
-  emit(stageMidpoint(STAGE_ORDER[0]))
+  emit(0)
 
   return {
     kill: () => {
       observer?.kill()
       pinTrigger.kill()
+      sectionEl.style.touchAction = ''
       lenis()?.start()
     },
   }

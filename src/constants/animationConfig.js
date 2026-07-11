@@ -16,8 +16,12 @@ export const DURATION = {
 // Scroll distance (in px) the building-construction ScrollTrigger stays
 // pinned for before releasing back to normal scroll — this is just the
 // pin's boundary now (stepping between stages is driven by discrete wheel
-// gestures, not by scrubbing across this distance).
-export const BUILDING_SCROLL_LENGTH = 600
+// gestures, not by scrubbing across this distance). Kept generous as a
+// safety buffer: touch-action:none should stop native scroll from ever
+// advancing while pinned, but if even a few px leaked through on some
+// device, this margin means it still can't accidentally cross the release
+// boundary before the user has actually stepped through every stage.
+export const BUILDING_SCROLL_LENGTH = 1200
 
 // Named progress checkpoints for the construction scroll experience.
 // Consolidated down to 5 story beats (from an original 11) so each scroll
