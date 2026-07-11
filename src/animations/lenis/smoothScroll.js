@@ -53,6 +53,12 @@ export function createSmoothScroll({ reducedMotion = false } = {}) {
         height: window.innerHeight,
       }
     },
+    // Lenis moves the page with a CSS transform, not native scrollTop.
+    // Without telling ScrollTrigger this explicitly, it assumes
+    // `position: fixed` pinning (correct for native scroll), which fights
+    // the transform-scrolled page every time a section pins — that fight
+    // is what shows up as a shake/jitter right at the start of a pin.
+    pinType: 'transform',
   })
 
   return lenis
