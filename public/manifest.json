@@ -4,8 +4,8 @@
   "description": "Structural engineering consultancy in Badlapur, Maharashtra — RCC structural design, structural audits and construction consultation.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#060e1c",
-  "theme_color": "#060e1c",
+  "background_color": "#f8fafc",
+  "theme_color": "#f8fafc",
   "icons": [
     {
       "src": "/favicon.svg",

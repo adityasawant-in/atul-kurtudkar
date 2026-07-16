@@ -31,8 +31,12 @@ const Footer = lazy(() =>
   import('../layout/Footer/Footer').then((m) => ({ default: m.Footer }))
 )
 
-const STRUCTURAL_950 = '#060e1c'
-const STRUCTURAL_900 = '#0b2545'
+// Light surface colors used to blend adjacent sections at the seam —
+// mirrors the --color-structural-950 / --color-structural-900 tokens
+// (see tokens.css). This site is light-only; these are intentionally
+// light values, not the old dark navy ones.
+const STRUCTURAL_950 = '#f8fafc'
+const STRUCTURAL_900 = '#eef2f6'
 
 // A near-invisible min-height placeholder rather than a visible skeleton —
 // these sections load fast enough that a skeleton would just flash, but the

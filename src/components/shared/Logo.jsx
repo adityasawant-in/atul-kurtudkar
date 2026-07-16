@@ -8,7 +8,7 @@ export function Logo({ size = 34, className }) {
   return (
     <svg width={size} height={size} viewBox="0 0 34 34" fill="none" aria-hidden="true" className={className}>
       <rect x="1" y="1" width="32" height="32" rx="8" stroke="#C9A34E" strokeWidth="1.2" />
-      <path d="M9 24V14L17 9L25 14V24" stroke="#F8F9FA" strokeWidth="1.4" strokeLinejoin="round" />
+      <path d="M9 24V14L17 9L25 14V24" stroke="#0B2545" strokeWidth="1.4" strokeLinejoin="round" />
       <path d="M13 24V17.5H21V24" stroke="#C9A34E" strokeWidth="1.4" strokeLinejoin="round" />
     </svg>
   )

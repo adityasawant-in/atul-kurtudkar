@@ -82,12 +82,12 @@ export function HeroBackdrop({ reducedMotion = false }) {
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-structural-950" aria-hidden="true">
-      {/* Sky gradient */}
+      {/* Sky gradient — light, airy daytime sky (site is light-only) */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(120% 90% at 50% 0%, #123468 0%, #0b2545 45%, #060e1c 100%)',
+            'radial-gradient(120% 90% at 50% 0%, #ffffff 0%, #eef2f6 45%, #dde6ef 100%)',
         }}
       />
 

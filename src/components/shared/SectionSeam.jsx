@@ -5,10 +5,12 @@ import { motion } from 'framer-motion'
  * between two sections, with a soft vertical gradient blending the two
  * section backgrounds into each other. Purely decorative, placed at
  * `top-0` of the section that follows it — keeps the "hard cut" feeling
- * out of an otherwise dark, block-colored page without touching each
- * section's own internal layout.
+ * out of an otherwise block-colored page without touching each section's
+ * own internal layout. Defaults are the site's light surface tones
+ * (--color-structural-950 / --color-structural-900) — this site is
+ * light-only.
  */
-export function SectionSeam({ from = '#060e1c', to = '#0b2545' }) {
+export function SectionSeam({ from = '#f8fafc', to = '#eef2f6' }) {
   return (
     <div className="pointer-events-none relative z-10 h-16 w-full overflow-hidden" aria-hidden="true">
       <div

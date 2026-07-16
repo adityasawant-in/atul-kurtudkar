@@ -195,7 +195,7 @@ export function Contact() {
           <iframe
             title="Office location map"
             src="https://maps.google.com/maps?q=Badlapur%2C%20Thane%2C%20Maharashtra&z=13&output=embed"
-            className="h-96 w-full grayscale invert-[0.92] contrast-[1.1]"
+            className="h-96 w-full grayscale-[0.15] contrast-[1.02]"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           />

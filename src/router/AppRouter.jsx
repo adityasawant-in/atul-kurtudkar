@@ -13,10 +13,15 @@ import { NotFound } from '../pages/NotFound'
  * About/Services/Projects/Contact are now full dedicated routes with their
  * own hero, SEO and content — reusable :serviceId / :slug templates power
  * every individual service and project page.
+ *
+ * `location` is passed in explicitly (rather than read internally via
+ * `useLocation()`) so this stays decoupled from the live router context —
+ * see PageWrapper.jsx for why that matters for the page-transition
+ * animation.
  */
-export function AppRouter() {
+export function AppRouter({ location }) {
   return (
-    <Routes>
+    <Routes location={location}>
       <Route path="/" element={<Home />} />
       <Route path="/about" element={<About />} />
       <Route path="/services" element={<Services />} />

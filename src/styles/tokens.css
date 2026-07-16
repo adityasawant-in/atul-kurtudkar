@@ -1,27 +1,41 @@
 @theme {
-  /* ---------- Color: Structural Blue / Concrete Amber / Signal Orange ---------- */
-  --color-structural-950: #060e1c;
-  --color-structural-900: #0b2545;
-  --color-structural-800: #123468;
-  --color-structural-700: #1a4685;
-  --color-structural-600: #2a5ba3;
-  --color-structural-500: #4577c2;
+  /* ---------- Color: Structural Blue / Concrete Amber / Signal Orange ----------
+   * Single, permanent LIGHT theme. This site is light-mode only — there is
+   * no dark variant and no [data-theme] switching. White/off-white corporate
+   * backgrounds with dark navy text and the same gold accent, in the style
+   * of lntecc.com / ncclindia.com.
+   *
+   * Naming note: token *names* (structural-950, ink-50, etc.) are kept as
+   * components already reference them everywhere via Tailwind classes
+   * (bg-structural-950, text-ink-50, ...). Only the numeric scale is no
+   * longer "950 = darkest" — 950 is the lightest surface and 500 is the
+   * darkest/most saturated tone, which is what every component already
+   * expects from the (now removed) light theme override. This keeps the
+   * conversion to light-only from requiring changes across dozens of
+   * component files.
+   */
+  --color-structural-950: #f8fafc;
+  --color-structural-900: #eef2f6;
+  --color-structural-800: #dde6ef;
+  --color-structural-700: #9db3cc;
+  --color-structural-600: #3f6da3;
+  --color-structural-500: #1c3f6e;
 
-  --color-concrete-100: #f7f1e2;
-  --color-concrete-300: #e6d2a0;
-  --color-concrete-500: #c9a34e;
-  --color-concrete-600: #a9843a;
+  --color-concrete-100: #fff8ea;
+  --color-concrete-300: #ecd8a8;
+  --color-concrete-500: #b9863a;
+  --color-concrete-600: #8f6423;
 
-  --color-signal-500: #d9541f;
-  --color-signal-600: #b8431a;
+  --color-signal-500: #c23f10;
+  --color-signal-600: #9c320c;
 
-  --color-ink-950: #0a0c0f;
-  --color-ink-900: #1a1d21;
-  --color-ink-700: #3a3f47;
+  --color-ink-950: #f8f9fa;
+  --color-ink-900: #eef0f2;
+  --color-ink-700: #c7ccd1;
   --color-ink-500: #6b7280;
-  --color-ink-300: #a7adb6;
-  --color-ink-100: #e7e9ec;
-  --color-ink-50: #f8f9fa;
+  --color-ink-300: #3f4650;
+  --color-ink-100: #1c2128;
+  --color-ink-50: #0f1216;
 
   /* ---------- Typography ---------- */
   --font-display: 'Space Grotesk', 'General Sans', ui-sans-serif, system-ui, sans-serif;
@@ -63,5 +77,5 @@
   --nav-height: 88px;
   --nav-height-scrolled: 64px;
   --container-max: 1280px;
-  color-scheme: dark;
+  color-scheme: light;
 }

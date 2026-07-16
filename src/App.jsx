@@ -3,7 +3,6 @@ import { BrowserRouter } from 'react-router-dom'
 import { Navbar } from './layout/Navbar/Navbar'
 import { PageWrapper } from './layout/PageWrapper'
 import { Loader } from './layout/Loader/Loader'
-import { AppRouter } from './router/AppRouter'
 import { NoiseOverlay } from './components/shared/NoiseOverlay'
 import { Vignette } from './components/shared/Vignette'
 import { ScrollProgressBar } from './components/shared/ScrollProgressBar'
@@ -11,7 +10,6 @@ import { CursorGlow } from './components/shared/CursorGlow'
 import { ErrorBoundary } from './components/shared/ErrorBoundary'
 import { SkipToContent } from './components/shared/SkipToContent'
 import { SearchOverlay } from './components/search/SearchOverlay'
-import { ThemeProvider } from './context/ThemeContext'
 
 function App() {
   const [searchOpen, setSearchOpen] = useState(false)
@@ -32,28 +30,24 @@ function App() {
   }, [])
 
   return (
-    <ThemeProvider>
-      {/* Last-resort catch-all for errors in the app shell itself (theme
-          provider, router setup, etc). Per-page errors are now caught
-          earlier and more gracefully by the ErrorBoundary inside
-          PageWrapper, which keeps the navbar alive and self-heals on
-          navigation — this outer one should rarely, if ever, trigger. */}
-      <ErrorBoundary>
-        <BrowserRouter>
-          <SkipToContent />
-          <Loader />
-          <ScrollProgressBar />
-          <CursorGlow />
-          <Navbar onSearchOpen={() => setSearchOpen(true)} />
-          <PageWrapper>
-            <AppRouter />
-          </PageWrapper>
-          <Vignette />
-          <NoiseOverlay />
-          <SearchOverlay open={searchOpen} onClose={closeSearch} />
-        </BrowserRouter>
-      </ErrorBoundary>
-    </ThemeProvider>
+    // Last-resort catch-all for errors in the app shell itself (router
+    // setup, etc). Per-page errors are now caught earlier and more
+    // gracefully by the ErrorBoundary inside PageWrapper, which keeps the
+    // navbar alive and self-heals on navigation — this outer one should
+    // rarely, if ever, trigger.
+    <ErrorBoundary>
+      <BrowserRouter>
+        <SkipToContent />
+        <Loader />
+        <ScrollProgressBar />
+        <CursorGlow />
+        <Navbar onSearchOpen={() => setSearchOpen(true)} />
+        <PageWrapper />
+        <Vignette />
+        <NoiseOverlay />
+        <SearchOverlay open={searchOpen} onClose={closeSearch} />
+      </BrowserRouter>
+    </ErrorBoundary>
   )
 }
 

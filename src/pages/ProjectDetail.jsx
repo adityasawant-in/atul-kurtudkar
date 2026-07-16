@@ -107,7 +107,7 @@ export function ProjectDetail() {
           <iframe
             title={`Map location for ${project.name}`}
             src={`https://maps.google.com/maps?q=${mapQuery}&z=13&output=embed`}
-            className="h-80 w-full grayscale invert-[0.92] contrast-[1.1]"
+            className="h-80 w-full grayscale-[0.15] contrast-[1.02]"
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
           />

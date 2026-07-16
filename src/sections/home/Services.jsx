@@ -51,7 +51,7 @@ function ServiceCard({ service, index }) {
         <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.05]">
           <defs>
             <pattern id={`svc-grid-${service.id}`} width="18" height="18" patternUnits="userSpaceOnUse">
-              <path d="M18 0H0V18" fill="none" stroke="#ffffff" strokeWidth="0.5" />
+              <path d="M18 0H0V18" fill="none" stroke="#0b2545" strokeWidth="0.5" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill={`url(#svc-grid-${service.id})`} />

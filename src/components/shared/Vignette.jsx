@@ -1,16 +1,10 @@
 /**
- * Soft radial darkening toward the viewport edges — adds depth to every
- * section without touching individual section markup.
+ * Previously a soft radial darkening toward the viewport edges (dark
+ * navy vignette) for depth on the old dark theme. This site is now
+ * light-only and a dark edge vignette has no place in a clean corporate
+ * light design, so the effect is retired. Component kept as a no-op so
+ * call sites (App.jsx) don't need to change.
  */
 export function Vignette() {
-  return (
-    <div
-      className="pointer-events-none fixed inset-0 z-[65]"
-      style={{
-        background:
-          'radial-gradient(ellipse at center, transparent 45%, rgba(6,14,28,0.55) 100%)',
-      }}
-      aria-hidden="true"
-    />
-  )
+  return null
 }
