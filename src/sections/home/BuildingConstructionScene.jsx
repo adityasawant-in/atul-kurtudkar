@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react'
-import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'framer-motion'
+import { useLayoutEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion, useMotionValueEvent, useScroll, useTransform } from 'framer-motion'
 import { ConstructionLayers, applyConstructionLayers } from './ConstructionLayers'
 import { CONSTRUCTION_STAGES } from '../../constants/animationConfig'
 import { mapRange } from '../../utils/clamp'
@@ -42,6 +42,37 @@ const STAGE_CONTENT = {
 }
 
 /**
+ * Progress rail, isolated into its own component so its text re-renders
+ * (up to ~100 times across one scroll-through, once per 1% of progress)
+ * only ever re-render this tiny node — not the whole scene, which also
+ * contains the heavier AnimatePresence stage-copy block. The bar itself
+ * is a `motion.div` driven straight off `scrollYProgress` via
+ * `useTransform`, so it updates on Framer's own rAF-batched loop with
+ * zero React re-renders at all.
+ */
+function ProgressRail({ scrollYProgress }) {
+  const width = useTransform(scrollYProgress, (p) => `${Math.round(p * 100)}%`)
+  const [pct, setPct] = useState(0)
+
+  useMotionValueEvent(scrollYProgress, 'change', (p) => {
+    const next = Math.round(p * 100)
+    setPct((prev) => (prev === next ? prev : next))
+  })
+
+  return (
+    <div className="pointer-events-none absolute inset-x-6 top-24 z-10 flex items-center gap-4 sm:inset-x-10">
+      <span className="font-display text-xs tracking-[0.25em] text-ink-500">
+        CONSTRUCTION PROGRESS
+      </span>
+      <div className="h-px flex-1 bg-ink-50/10">
+        <motion.div className="h-px bg-concrete-500" style={{ width }} />
+      </div>
+      <span className="font-display text-xs tabular-nums text-concrete-300">{pct}%</span>
+    </div>
+  )
+}
+
+/**
  * Rebuilt on native CSS `position: sticky` (for the pinned visual) +
  * Framer Motion's `useScroll` (for progress) instead of GSAP
  * ScrollTrigger's `pin: true` + a manual wheel/touch Observer.
@@ -65,7 +96,6 @@ const STAGE_CONTENT = {
 export function BuildingConstructionScene() {
   const containerRef = useRef(null)
   const [stage, setStage] = useState(STAGE_ORDER[0])
-  const [progressPct, setProgressPct] = useState(0)
 
   // Every layer is a plain DOM ref, written to directly on scroll — no
   // React state, no re-renders, same zero-cost-per-frame contract as before.
@@ -90,11 +120,34 @@ export function BuildingConstructionScene() {
     offset: ['start start', 'end end'],
   })
 
+  // BUG FIX — building briefly appears fully-constructed at 0% scroll,
+  // then "deletes" itself a moment later:
+  //
+  // None of the SVG layers (walls, columns, roof, glass, ...) have an
+  // `opacity` set in ConstructionLayers.jsx — they're only ever styled by
+  // `applyConstructionLayers`, which up to now only ran inside
+  // `useMotionValueEvent(scrollYProgress, 'change', ...)`. That callback
+  // fires on *changes* to the scroll value — it does not fire once with
+  // the current value on mount. So on first paint every layer sat at its
+  // raw SVG default (no opacity attribute = fully opaque), meaning the
+  // *entire* building — walls, roof, glass and all — rendered at once
+  // regardless of real scroll position. The instant the first genuine
+  // scroll `change` event fired, the function finally ran with the real
+  // (near-zero) progress and correctly hid everything again — which
+  // looked exactly like "the building gets deleted" a moment after
+  // scrolling in.
+  //
+  // Running it once here, synchronously before paint, with whatever the
+  // scroll progress actually is at mount time closes that gap — the
+  // layers are correct from the very first frame, with no dependency on
+  // an event that might take a moment to fire.
+  useLayoutEffect(() => {
+    applyConstructionLayers(scrollYProgress.get(), layerRefs, mapRange)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   useMotionValueEvent(scrollYProgress, 'change', (p) => {
     applyConstructionLayers(p, layerRefs, mapRange)
-
-    const pct = Math.round(p * 100)
-    setProgressPct((prev) => (prev === pct ? prev : pct))
 
     const idx = Math.min(STAGE_ORDER.length - 1, Math.max(0, Math.floor(p * STAGE_ORDER.length)))
     const key = STAGE_ORDER[idx]
@@ -117,20 +170,7 @@ export function BuildingConstructionScene() {
         {/* Readability scrim keeps copy legible over the layered building */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-structural-950/85 via-structural-950/30 to-structural-950/70" />
 
-        {/* Progress rail */}
-        <div className="pointer-events-none absolute inset-x-6 top-24 z-10 flex items-center gap-4 sm:inset-x-10">
-          <span className="font-display text-xs tracking-[0.25em] text-ink-500">
-            CONSTRUCTION PROGRESS
-          </span>
-          <div className="h-px flex-1 bg-ink-50/10">
-            <motion.div
-              className="h-px bg-concrete-500"
-              animate={{ width: `${progressPct}%` }}
-              transition={{ ease: 'linear', duration: 0.1 }}
-            />
-          </div>
-          <span className="font-display text-xs tabular-nums text-concrete-300">{progressPct}%</span>
-        </div>
+        <ProgressRail scrollYProgress={scrollYProgress} />
 
         {/* Stage copy */}
         <div className="relative z-10 flex h-full w-full items-center px-6 sm:px-10">
