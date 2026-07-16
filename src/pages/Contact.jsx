@@ -1,13 +1,17 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Clock, Mail, MapPin, Phone } from 'lucide-react'
+import { Clock, Mail, MapPin, MessageCircle, Phone } from 'lucide-react'
 import { PageHero } from '../components/shared/PageHero'
 import { SectionWrapper } from '../components/shared/SectionWrapper'
 import { SectionHeading } from '../components/shared/SectionHeading'
 import { GlassCard } from '../components/shared/GlassCard'
+import { Button } from '../components/ui/Button'
 // import { PremiumButton } from '../components/ui/PremiumButton'
 import { SEO } from '../components/seo/SEO'
 // import { cn } from '../utils/cn'
+
+const PHONE = '+91 98765 43210'
+const WHATSAPP_HREF = `https://wa.me/${PHONE.replace(/[^\d]/g, '')}`
 
 const BUSINESS_HOURS = [
   { day: 'Monday – Friday', hours: '9:30 AM – 6:30 PM' },
@@ -156,7 +160,7 @@ export function Contact() {
                 <Phone className="h-5 w-5 text-concrete-500" strokeWidth={2} />
                 <h4 className="font-display text-base font-semibold text-ink-50">Phone</h4>
               </div>
-              <p className="mt-4 text-base leading-relaxed text-ink-300">+91 00000 00000</p>
+              <p className="mt-4 text-base leading-relaxed text-ink-300">{PHONE}</p>
             </GlassCard>
             <GlassCard className="p-8">
               <div className="flex items-center gap-3">
@@ -180,6 +184,28 @@ export function Contact() {
               </ul>
             </GlassCard>
           </div>
+
+          {/* Click-to-chat WhatsApp CTA — jumps straight to a chat with the
+              client's WhatsApp number, same wa.me pattern used in the
+              homepage contact section. */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.6 }}
+            className="mt-8 flex flex-col items-center gap-4 rounded-lg border border-ink-50/10 bg-ink-50/[0.02] px-8 py-10 text-center"
+          >
+            <MessageCircle className="h-7 w-7 text-concrete-500" strokeWidth={1.75} />
+            <div>
+              <p className="font-display text-lg font-semibold text-ink-50">Prefer WhatsApp?</p>
+              <p className="mt-1 text-sm leading-relaxed text-ink-300">
+                Message us directly and we'll get back to you right away.
+              </p>
+            </div>
+            <Button as="a" href={WHATSAPP_HREF} target="_blank" rel="noreferrer" variant="primary">
+              Chat on WhatsApp
+            </Button>
+          </motion.div>
         </div>
       </SectionWrapper>
 
