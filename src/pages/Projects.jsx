@@ -4,6 +4,7 @@ import { SectionWrapper } from '../components/shared/SectionWrapper'
 import { AnimatedGrid } from '../components/shared/AnimatedGrid'
 import { ProjectCard } from '../components/shared/ProjectCard'
 import { ProjectFilter } from '../components/projects/ProjectFilter'
+import { CtaBanner } from '../components/shared/CtaBanner'
 import { SEO } from '../components/seo/SEO'
 import { PROJECTS, PROJECT_CATEGORIES } from '../data/projects'
 
@@ -43,6 +44,10 @@ export function Projects() {
           )}
         </div>
       </SectionWrapper>
+      <CtaBanner
+        image="/images/cta-site-banner.jpeg"
+        title="Ready to start engineering your next project?"
+      />
     </>
   )
 }

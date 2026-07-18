@@ -1,30 +1,18 @@
 import { useEffect, useMemo, useRef } from 'react'
 
 /**
- * Replaces the old R3F HeroScene (Canvas + Skyline + Clouds + Particles +
- * BlueprintGrid + Lights + PostFX bloom/DOF). Pure CSS/SVG, one composited
- * layer for the mouse-parallax drift — no WebGL context, no per-frame
- * render loop. This was the single largest JS chunk in the whole site
- * (three.js alone was ~890KB / ~240KB gzip) and, combined with the
- * construction section, the main source of the lag.
+ * Real photograph background (hero-construction-main.jpeg) in place of the
+ * old drawn sky-gradient + SVG skyline silhouette — the skyline was a
+ * stand-in for a real building photo, so it's removed now that one exists.
+ * The blueprint-grid pulse, drifting clouds and floating dust are kept:
+ * they're the site's ongoing brand texture, not placeholders, and read
+ * fine layered over a photo.
  */
 export function HeroBackdrop({ reducedMotion = false }) {
   const parallaxRef = useRef(null)
   const rafRef = useRef(null)
   const targetRef = useRef({ x: 0, y: 0 })
   const currentRef = useRef({ x: 0, y: 0 })
-
-  // Skyline silhouette — same "randomized once" approach as the old R3F
-  // Skyline component, just memoized as SVG rects instead of meshes.
-  const towers = useMemo(() => {
-    const count = 16
-    return Array.from({ length: count }, (_, i) => {
-      const width = 26 + Math.random() * 22
-      const height = 40 + Math.random() * 130
-      const x = (i / count) * 1100 - 40 + (Math.random() - 0.5) * 20
-      return { x, width, height, opacity: 0.35 + Math.random() * 0.25 }
-    })
-  }, [])
 
   const clouds = useMemo(
     () =>
@@ -82,13 +70,15 @@ export function HeroBackdrop({ reducedMotion = false }) {
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-structural-950" aria-hidden="true">
-      {/* Sky gradient — light, airy daytime sky (site is light-only) */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            'radial-gradient(120% 90% at 50% 0%, #ffffff 0%, #eef2f6 45%, #dde6ef 100%)',
-        }}
+      {/* Hero photograph — loaded eagerly + high priority since it's the
+          very first thing painted on the site. */}
+      <img
+        src="/images/hero-construction-main.jpeg"
+        alt=""
+        loading="eager"
+        fetchPriority="high" 
+        decoding="async"
+        className="absolute inset-0 h-full w-full object-cover"
       />
 
       {/* Blueprint grid, gently pulsing via CSS animation instead of a per-frame GSAP tween */}
@@ -115,33 +105,13 @@ export function HeroBackdrop({ reducedMotion = false }) {
                 left: '-20%',
                 width: c.size,
                 height: c.size * 0.4,
-                background: '#e7e9ec',
+                background: '#ffffff',
                 opacity: c.opacity,
                 animation: `hero-cloud-drift ${c.duration}s linear infinite`,
                 animationDelay: `${c.delay}s`,
               }}
             />
           ))}
-
-        {/* Skyline silhouette */}
-        <svg
-          viewBox="0 0 1040 220"
-          preserveAspectRatio="xMidYMax slice"
-          className="absolute inset-x-0 bottom-0 h-[42%] w-full"
-        >
-          {towers.map((t, i) => (
-            <rect
-              key={i}
-              x={t.x}
-              y={220 - t.height}
-              width={t.width}
-              height={t.height}
-              fill="#0b2545"
-              opacity={t.opacity}
-              rx="2"
-            />
-          ))}
-        </svg>
 
         {/* Floating dust */}
         {!reducedMotion &&
@@ -162,7 +132,7 @@ export function HeroBackdrop({ reducedMotion = false }) {
           ))}
       </div>
 
-      {/* Soft key-light glow, standing in for the old directional/rim lights */}
+      {/* Soft warm key-light glow */}
       <div
         className="absolute inset-0"
         style={{

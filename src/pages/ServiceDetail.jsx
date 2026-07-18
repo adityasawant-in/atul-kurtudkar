@@ -6,7 +6,7 @@ import { SectionWrapper } from '../components/shared/SectionWrapper'
 import { SectionHeading } from '../components/shared/SectionHeading'
 import { GlassCard } from '../components/shared/GlassCard'
 import { Timeline } from '../components/shared/Timeline'
-import { PremiumButton } from '../components/ui/PremiumButton'
+import { CtaBanner } from '../components/shared/CtaBanner'
 import { SEO } from '../components/seo/SEO'
 import { getServiceById, SERVICES } from '../data/services'
 
@@ -95,16 +95,11 @@ export function ServiceDetail() {
         </div>
       </SectionWrapper>
 
-      <SectionWrapper className="text-center">
-        <h3 className="mx-auto max-w-xl font-display text-3xl font-semibold text-ink-50 sm:text-4xl">
-          Ready to discuss your {service.title.toLowerCase()} project?
-        </h3>
-        <div className="mt-8 flex justify-center">
-          <PremiumButton as={Link} to="/contact">
-            Request a Consultation
-          </PremiumButton>
-        </div>
-      </SectionWrapper>
+      <CtaBanner
+        image="/images/cta-site-banner.jpeg"
+        title={`Ready to discuss your ${service.title.toLowerCase()} project?`}
+        buttonLabel="Request a Consultation"
+      />
 
       <SectionWrapper>
         <SectionHeading eyebrow="Other Services" title="Explore more of what we do" />

@@ -8,10 +8,33 @@ export const PROJECT_CATEGORIES = [
 ]
 
 /**
+ * A small set of real, reused category photographs — not one unique photo
+ * per project. Six sample projects don't justify commissioning 24+ unique
+ * images; four category photos, shared across every project in that
+ * category (with two lightweight fallbacks for the categories that don't
+ * get their own), is exactly how a lean corporate site actually does it.
+ * See the Image Shot List in this patch's README for the four prompts.
+ */
+export const CATEGORY_IMAGES = {
+  Residential: '/images/project-residential.jpeg',
+  Commercial: '/images/project-commercial.jpeg',
+  Industrial: '/images/project-industrial.jpeg',
+  Institutional: '/images/project-institutional.jpeg',
+  // No dedicated photo for these two — reuse the closest visual match
+  // rather than commissioning two more images for two categories.
+  'Structural Audit': '/images/project-institutional.jpeg',
+  Consultancy: '/images/project-commercial.jpeg',
+}
+
+export function getProjectImage(project) {
+  return CATEGORY_IMAGES[project.category] ?? '/images/project-institutional.jpeg'
+}
+
+/**
  * Every project below powers three surfaces: the /projects grid + filter,
  * the reusable /projects/:slug detail page, and the site search index.
- * Keep `stats`/`timeline`/`gallery` shapes identical across entries so the
- * detail page template never has to special-case a project.
+ * Keep `stats`/`timeline` shapes identical across entries so the detail
+ * page template never has to special-case a project.
  */
 export const PROJECTS = [
   {
@@ -48,12 +71,6 @@ export const PROJECTS = [
       { label: 'Structural System', value: 'RCC Frame' },
       { label: 'Seismic Zone', value: 'Zone III' },
     ],
-    gallery: [
-      { caption: 'Front elevation', image: '/images/ambernath-front-elevation.jpg' },
-      { caption: 'Council chamber structural frame' },
-      { caption: 'Foundation raft pour' },
-      { caption: 'Completed facade' },
-    ],
     featured: true,
   },
   {
@@ -88,11 +105,6 @@ export const PROJECTS = [
       { label: 'Structural System', value: 'RCC Shear Wall Frame' },
       { label: 'Seismic Zone', value: 'Zone III' },
     ],
-    gallery: [
-      { caption: 'Tower silhouette' },
-      { caption: 'Podium transfer structure' },
-      { caption: 'Typical floor slab pour' },
-    ],
   },
   {
     slug: 'dombivli-industrial-warehouse-complex',
@@ -125,11 +137,6 @@ export const PROJECTS = [
       { label: 'Clear Span', value: '60 m' },
       { label: 'Structural System', value: 'PEB Steel Frame' },
       { label: 'Crane Capacity', value: '15 T EOT' },
-    ],
-    gallery: [
-      { caption: 'Steel portal frame erection' },
-      { caption: 'Crane gantry beam' },
-      { caption: 'Completed warehouse interior' },
     ],
   },
   {
@@ -164,11 +171,6 @@ export const PROJECTS = [
       { label: 'Audit Method', value: 'NDT + Visual' },
       { label: 'Repair Scope', value: 'Structural + Waterproofing' },
     ],
-    gallery: [
-      { caption: 'Rebound hammer testing' },
-      { caption: 'Corroded rebar exposure' },
-      { caption: 'Post-repair facade' },
-    ],
   },
   {
     slug: 'navi-mumbai-commercial-plaza',
@@ -202,11 +204,6 @@ export const PROJECTS = [
       { label: 'Structural System', value: 'RCC Frame' },
       { label: 'Seismic Zone', value: 'Zone III' },
     ],
-    gallery: [
-      { caption: 'Basement excavation' },
-      { caption: 'Atrium structural frame' },
-      { caption: 'Completed plaza facade' },
-    ],
   },
   {
     slug: 'badlapur-school-campus-consultancy',
@@ -239,11 +236,6 @@ export const PROJECTS = [
       { label: 'Blocks', value: '3' },
       { label: 'Assembly Hall Span', value: '24 m' },
       { label: 'Structural System', value: 'RCC + Steel Truss' },
-    ],
-    gallery: [
-      { caption: 'Assembly hall truss erection' },
-      { caption: 'Classroom block frame' },
-      { caption: 'Completed campus' },
     ],
   },
 ]

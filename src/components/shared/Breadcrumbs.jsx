@@ -4,8 +4,10 @@ import { cn } from '../../utils/cn'
 
 /**
  * items: [{ label, to? }] — last item (no `to`) renders as the current page.
+ * `light`: use white/light tones instead of the default dark-ink tones —
+ * for when Breadcrumbs sits over a photographic PageHero background.
  */
-export function Breadcrumbs({ items, className }) {
+export function Breadcrumbs({ items, className, light = false }) {
   return (
     <nav aria-label="Breadcrumb" className={cn('flex items-center gap-2 text-xs', className)}>
       {items.map((item, i) => {
@@ -15,16 +17,22 @@ export function Breadcrumbs({ items, className }) {
             {item.to && !isLast ? (
               <Link
                 to={item.to}
-                className="font-display tracking-wide text-ink-300 transition-colors hover:text-concrete-500"
+                className={cn(
+                  'font-display tracking-wide transition-colors hover:text-concrete-400',
+                  light ? 'text-white/70' : 'text-ink-300 hover:text-concrete-500'
+                )}
               >
                 {item.label}
               </Link>
             ) : (
-              <span aria-current={isLast ? 'page' : undefined} className="font-display tracking-wide text-ink-50">
+              <span
+                aria-current={isLast ? 'page' : undefined}
+                className={cn('font-display tracking-wide', light ? 'text-white' : 'text-ink-50')}
+              >
                 {item.label}
               </span>
             )}
-            {!isLast && <ChevronRight className="h-3 w-3 text-ink-500" strokeWidth={2} />}
+            {!isLast && <ChevronRight className={cn('h-3 w-3', light ? 'text-white/50' : 'text-ink-500')} strokeWidth={2} />}
           </span>
         )
       })}

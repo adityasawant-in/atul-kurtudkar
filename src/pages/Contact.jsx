@@ -119,6 +119,7 @@ export function Contact() {
         }}
       />
       <PageHero
+        image="/images/contact-office-exterior.jpeg"
         eyebrow="Contact"
         title="Let's discuss your next structure"
         description="Whether it's a new build, a structural audit, or a career conversation — reach out and we'll respond within one business day."

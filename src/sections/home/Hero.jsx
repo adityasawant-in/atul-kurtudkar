@@ -47,14 +47,18 @@ export function Hero() {
         <HeroBackdrop reducedMotion={reducedMotion} />
       </div>
 
-      {/* Readability scrim over the 3D scene */}
+      {/* Readability scrim over the hero photograph — deliberately uses
+          real dark colors (not the site's structural-950 token, which now
+          means "light") since this sits over a photo and needs guaranteed
+          contrast regardless of what's in the image. */}
       <div
         ref={scrimRef}
-        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-structural-950 via-structural-950/40 to-structural-950/10"
+        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#050c17] via-[#050c17]/55 to-[#050c17]/15"
       />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#050c17]/80 via-[#050c17]/30 to-transparent" />
 
-      <div ref={contentRef} className="relative z-10 mx-auto w-full max-w-6xl px-6 pt-24 sm:px-8">
-        <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-ink-50/15 px-4 py-1.5 font-display text-xs font-medium tracking-[0.18em] text-concrete-300">
+      <div ref={contentRef} className="relative z-10 mx-auto w-full max-w-6xl px-6 pt-36 sm:px-8 sm:pt-40">
+        <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-1.5 font-display text-xs font-medium tracking-[0.18em] text-concrete-300">
           STRUCTURAL ENGINEERING CONSULTANCY &middot; BADLAPUR, MAHARASHTRA
         </span>
 
@@ -62,11 +66,11 @@ export function Hero() {
           variants={staggerContainer(0.12)}
           initial="hidden"
           animate="show"
-          className="max-w-4xl font-display text-4xl font-semibold leading-[1.08] tracking-tight text-ink-50 sm:text-6xl lg:text-7xl"
+          className="max-w-4xl font-display text-4xl font-semibold leading-[1.08] tracking-tight text-white sm:text-6xl lg:text-7xl"
         >
           {HEADING_LINES.map((line, i) => (
             <motion.span key={line} variants={staggerLetter} className="block overflow-hidden">
-              <span className={i === 1 ? 'text-gradient-shimmer' : ''}>{line}</span>
+              <span className={i === 1 ? 'text-concrete-300' : ''}>{line}</span>
             </motion.span>
           ))}
         </motion.h1>
@@ -76,7 +80,7 @@ export function Hero() {
           initial="hidden"
           animate="show"
           transition={{ delay: 0.5 }}
-          className="mt-7 max-w-xl text-base leading-relaxed text-ink-300 sm:text-lg"
+          className="mt-7 max-w-xl text-base leading-relaxed text-white/75 sm:text-lg"
         >
           Premium structural engineering consultancy delivering safe, efficient and
           innovative engineering solutions for residential, commercial and institutional
@@ -103,7 +107,7 @@ export function Hero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.2, duration: 1 }}
-        className="absolute inset-x-0 bottom-8 z-10 flex flex-col items-center gap-2 text-ink-500"
+        className="absolute inset-x-0 bottom-8 z-10 flex flex-col items-center gap-2 text-white/60"
       >
         <span className="font-display text-[10px] tracking-[0.3em]">SCROLL TO BUILD</span>
         <span className="h-9 w-px animate-pulse bg-gradient-to-b from-concrete-500 to-transparent" />

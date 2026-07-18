@@ -1,14 +1,14 @@
-import { useParams, Navigate, Link } from 'react-router-dom'
+import { useParams, Navigate } from 'react-router-dom'
 import { PageHero } from '../components/shared/PageHero'
 import { SectionWrapper } from '../components/shared/SectionWrapper'
 import { SectionHeading } from '../components/shared/SectionHeading'
 import { Timeline } from '../components/shared/Timeline'
 import { StatisticsCard } from '../components/shared/StatisticsCard'
 import { ProjectCard } from '../components/shared/ProjectCard'
+import { CtaBanner } from '../components/shared/CtaBanner'
 import { AnimatedGrid } from '../components/shared/AnimatedGrid'
-import { PremiumButton } from '../components/ui/PremiumButton'
 import { SEO } from '../components/seo/SEO'
-import { getProjectBySlug, getRelatedProjects } from '../data/projects'
+import { getProjectBySlug, getRelatedProjects, getProjectImage } from '../data/projects'
 
 export function ProjectDetail() {
   const { slug } = useParams()
@@ -40,6 +40,18 @@ export function ProjectDetail() {
         description={project.description}
         breadcrumbs={[{ label: 'Home', to: '/' }, { label: 'Projects', to: '/projects' }, { label: project.name }]}
       />
+
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="relative aspect-[21/9] w-full overflow-hidden rounded-lg border border-ink-50/10">
+          <img
+            src={getProjectImage(project)}
+            alt={project.name}
+            loading="eager"
+            decoding="async"
+            className="h-full w-full object-cover"
+          />
+        </div>
+      </div>
 
       <SectionWrapper>
         <SectionHeading index="01" eyebrow="Project Overview" title="What the project involved" description={project.overview} />
@@ -85,24 +97,7 @@ export function ProjectDetail() {
       </SectionWrapper>
 
       <SectionWrapper className="bg-ink-50/[0.02]">
-        <SectionHeading index="05" eyebrow="Project Gallery" title="Selected moments from the build" />
-        <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {project.gallery.map((item) => (
-            <div
-              key={item.caption}
-              className="glass relative flex aspect-[4/3] items-end overflow-hidden rounded-lg p-3"
-            >
-              {item.image && (
-                <img src={item.image} alt={item.caption} className="absolute inset-0 h-full w-full object-cover" />
-              )}
-              <span className="relative z-10 font-display text-xs text-ink-300">{item.caption}</span>
-            </div>
-          ))}
-        </div>
-      </SectionWrapper>
-
-      <SectionWrapper>
-        <SectionHeading index="06" eyebrow="Location" title={project.location} />
+        <SectionHeading index="05" eyebrow="Location" title={project.location} />
         <div className="mt-8 overflow-hidden rounded-lg border border-ink-50/10">
           <iframe
             title={`Map location for ${project.name}`}
@@ -115,7 +110,7 @@ export function ProjectDetail() {
       </SectionWrapper>
 
       {related.length > 0 && (
-        <SectionWrapper className="bg-ink-50/[0.02]">
+        <SectionWrapper>
           <SectionHeading eyebrow="Related Projects" title="More work in this space" />
           <div className="mt-10">
             <AnimatedGrid items={related} keyField="slug" renderItem={(p) => <ProjectCard project={p} />} />
@@ -123,16 +118,10 @@ export function ProjectDetail() {
         </SectionWrapper>
       )}
 
-      <SectionWrapper className="text-center">
-        <h3 className="mx-auto max-w-xl font-display text-3xl font-semibold text-ink-50 sm:text-4xl">
-          Have a project that needs structural engineering like this?
-        </h3>
-        <div className="mt-8 flex justify-center">
-          <PremiumButton as={Link} to="/contact">
-            Start a Conversation
-          </PremiumButton>
-        </div>
-      </SectionWrapper>
+      <CtaBanner
+        image="/images/cta-site-banner.jpeg"
+        title="Have a project that needs structural engineering like this?"
+      />
     </>
   )
 }
